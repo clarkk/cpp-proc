@@ -3,15 +3,15 @@
  *	# g++ -O2 -std=c++17 proc.cpp -o proc
  */
 
-#include <iostream>
-#include <dirent.h>
-#include <string.h>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <regex>
+#include "proc.hpp"
+//#include <dirent.h>
+//#include <string.h>
+//#include <fstream>
+//#include <sstream>
+//#include <algorithm>
+//#include <regex>
 
-int is_numeric(const char* c){
+/*int is_numeric(const char* c){
 	for( ; *c; c++){
 		if(*c < '0' || *c > '9'){
 			return 0;
@@ -19,12 +19,10 @@ int is_numeric(const char* c){
 	}
 	
 	return 1;
-}
+}*/
 
-int main(int argc, char* argv[]){
-	const bool verbose 		= false;
-	
-	bool use_name 			= false;
+void ps(){
+	/*bool use_name 			= false;
 	std::string arg_name;
 	
 	bool use_filter 		= false;
@@ -44,10 +42,6 @@ int main(int argc, char* argv[]){
 		use_filter 			= true;
 		arg_filter 			= std::string(argv[2]);
 		re 					= arg_filter;
-	}
-	
-	if(verbose){
-		std::cout << "Input name: " << arg_name << "\nInput filter: " << arg_filter << std::endl;
 	}
 	
 	const char* dir_proc 	= "/proc/";
@@ -97,23 +91,13 @@ int main(int argc, char* argv[]){
 				cmd_name = cmd.substr(0, cmd.find(" "));	// Get cmd before first space
 				cmd_name = cmd_name.substr(cmd_name.find_last_of("/\\") + 1);	// Get basename of cmd path
 				
-				if(verbose){
-					std::cout << "Name: " << cmd_name << std::endl;
-				}
-				
 				if(arg_name != cmd_name){
 					continue;
 				}
 				
 				//	Filter
-				if(use_filter){
-					if(verbose){
-						std::cout << "Filter: " << arg_filter << std::endl;
-					}
-					
-					if(!std::regex_search(cmd, rem, re)){
-						continue;
-					}
+				if(use_filter && !std::regex_search(cmd, rem, re)){
+					continue;
 				}
 			}
 			
@@ -136,7 +120,36 @@ int main(int argc, char* argv[]){
 			std::cout << proc_pid << " " << proc_ppid << " " << cmd << std::endl;
 		}
 	}
-	closedir(dir);
+	closedir(dir);*/
+}
+
+int main(int argc, char* argv[]){
+	Proc a;
+	a.usage();
+	try{
+		//	Parse arguments
+		for(int i = 1; i < argc; i++){
+			std::string arg = std::string(argv[i]);
+			
+			if(arg == "-C"){
+				a.set_name(argv[++i]);
+			}
+			else if(arg == "-grep"){
+				//a.set_dpi(atoi(argv[++i]));
+			}
+			else{
+				throw std::runtime_error("Argument '"+arg+"' is invalid");
+			}
+		}
+		
+		//std::cout << a.run() << std::endl;
+	}
+	catch(std::exception& e){
+		std::cerr << "Error: " << e.what() << "\n" << std::endl;
+		a.usage();
+		
+		return 1;
+	}
 	
 	return 0;
 }
