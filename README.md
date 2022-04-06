@@ -4,7 +4,11 @@ High performance (Linux) process status information tool. It reads the dynamic `
 It can also be used with the built-in regex argument `-grep`. It will then work in the same way as if you pipe the output like `ps ... | grep ...` but again with much higher performance because the regex is performed directly on the result before output.
 
 ### Example
-`./proc -name php -grep "cronjob\.php listen_websockets" -stat`
+```
+# ./proc -name php -grep "cronjob\.php listen_websockets" -stat
+8650 8648 0% 39.7M 1649252760 2847 php /var/www/secure.dyntest.dk/php/cronjob.php listen_websockets
+15272 15271 0.3% 38.9M 1649255581 26 php /var/www/secure.dyntest.dk/php/cronjob.php listen_websockets
+```
 
 ## -name (argument)
 The `-name <name>` filter all processes by name. If you want to see all PHP processes use `-name php`.
