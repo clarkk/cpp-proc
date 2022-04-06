@@ -4,18 +4,21 @@ public:
 	
 	const std::string VERSION			= "0.1";
 	void usage							();
+	
 	void find_name						(const std::string& s);
 	void filter_cmd						(const std::string& s);
-	//void set_level						(const std::string& s);
-	//void set_dpi 						(int d);
-	//void set_verbose					(bool d);
-	//std::string run						();
+	
+	std::string run						();
 
 private:
+	bool _use_name 						= false;
 	std::string _name 					= "";
+	
+	bool _use_filter 					= false;
 	std::string _filter 				= "";
-	/*tesseract::PageIteratorLevel level;
-	bool is_verbose						= false;
-	int dpi 							= DPI;
-	void error							(const std::string& s);*/
+	
+	std::smatch _filter_rem;
+	std::regex _filter_re;
+	
+	const char* _dir_proc 				= "/proc/";
 };

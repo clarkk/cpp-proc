@@ -1,140 +1,108 @@
 #include <iostream>
+#include <regex>
+#include <dirent.h>
+#include <fstream>
+#include <sstream>
+#include "str/fmt.cpp"
 #include "proc.h"
 
 Proc::Proc(){}
 
 void Proc::usage(){
-	std::cout<< "proc: version " << VERSION <<
-		"\n\nUsage: proc [options]\n"
+	std::cout << "proc: version " << VERSION <<
+		"\n\nOutput process list\nPID PPID CMD\n\n"
+		"Usage: proc [options]\n"
 		"Options:\n"
 		"\t-C <name>            -- Process name\n"
-		"\t-grep <pattern>      -- Filter output grep alike\n" << std::endl;
+		"\t-grep <pattern>      -- Filter output grep alike\n" << '\n';
 }
 
 void Proc::find_name(const std::string& s){
-	_name = s;
+	_use_name 		= true;
+	_name 			= s;
 }
 
 void Proc::filter_cmd(const std::string& s){
-	_filter = s;
+	_use_filter 	= true;
+	_filter 		= s;
+	_filter_re 		= s;
 }
 
-/*void Txtocr::set_level(const std::string& s){
-	if(s == ""){
-		level = tesseract::RIL_WORD;
-	}
-	else if(s == "word"){
-		level = tesseract::RIL_WORD;
-	}
-	else if(s == "symbol"){
-		level = tesseract::RIL_SYMBOL;
-	}
-	else{
-		error("Invalid iterator level");
-	}
-}
-
-void Txtocr::set_dpi(int d){
-	dpi = d;
-}
-
-void Txtocr::set_verbose(bool v){
-	is_verbose = v;
-}
-
-void Txtocr::error(const std::string& s){
-	throw std::runtime_error(s);
-}
-
-std::string Txtocr::run(){
-	//	Return error if input file is not defined
-	if(input == ""){
-		error("Input file not defined");
-	}
-	//	Return error if input file is not TIFF
-	else{
-		std::string input_lc = input;
-		boost::to_lower(input_lc);
-		if(input_lc.substr(input_lc.find_last_of(".") + 1) != "tif"){
-			error("Input file must be TIFF");
-		}
+std::string Proc::run(){
+	DIR* dir = opendir(_dir_proc);
+	if(dir == NULL){
+		throw std::runtime_error("Couldn't open directory "+std::string(_dir_proc));
 	}
 	
-	auto start = std::chrono::high_resolution_clock::now();
+	struct dirent* entry;
 	
-	//	Open input image with leptonica library
-	Pix* image = pixRead((input).c_str());
+	char path_cmd[20];
+	std::ifstream ifs;
+	std::string cmd;
+	std::string cmd_name;
 	
-	if(!image){
-		error("Could not open image");
-	}
+	char path_stat[16];
+	FILE* f_stat;
+	char proc_pid[6];
+	char proc_name[17];
+	char proc_state[2];
+	char proc_ppid[6];
 	
-	boost::property_tree::ptree root;
-	boost::property_tree::ptree children;
-	
-	root.put("height", pixGetHeight(image));
-	root.put("width", pixGetWidth(image));
-	
-	//	Initialize tesseract
-	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
-	//if(api->Init(NULL, "dan+eng", tesseract::OEM_LSTM_ONLY)){
-	if(api->Init("/usr/share/tesseract-ocr/5/tessdata/best", "dan+eng")){
-		error("Could not initialize tesseract");
-	}
-	
-	char dpi_string[255];
-	snprintf(dpi_string, 254, "%d", dpi);
-	api->SetVariable("user_defined_dpi", dpi_string);
-	
-	api->SetImage(image);
-	api->Recognize(0);
-	
-	tesseract::ResultIterator* ri = api->GetIterator();
-	
-	if(ri != 0){
-		do{
-			boost::property_tree::ptree child;
+	for(int i = 0; entry = readdir(dir); i++){
+		if(entry->d_type == DT_DIR && val::is_digits(entry->d_name)){
+			//	Build path to /proc/PID/cmdline
+			strcpy(path_cmd, _dir_proc);
+			strcat(path_cmd, entry->d_name);
+			strcat(path_cmd, "/cmdline");
 			
-			const char* seg = ri->GetUTF8Text(level);
-			
-			if(seg && seg[0]){
-				int x1, y1, x2, y2, height, width;
-				ri->BoundingBox(level, &x1, &y1, &x2, &y2);
-				height 	= y2 - y1;
-				width 	= x2 - x1;
-				
-				if(is_verbose){
-					printf("seg: '%s'; BoundingBox: %d,%d,%d,%d;\n", seg, x1, y1, x2, y2);
-				}
-				
-				child.put("top",	y1);
-				child.put("bottom",	y1 + height);
-				child.put("left",	x1);
-				child.put("right",	x1 + width);
-				child.put("width",	width);
-				child.put("height",	height);
-				child.put("value",	seg);
-				child.put("conf",	roundf(ri->Confidence(level) * 100) / 100);
-				
-				children.push_back(std::make_pair("", child));
+			//	Open /proc/PID/cmdline
+			ifs.open(path_cmd, std::ifstream::in);
+			if(!ifs){
+				continue;
 			}
 			
-			delete[] seg;
+			std::stringstream ss;
+			ss << ifs.rdbuf();
+			cmd = ss.str();
+			ifs.close();
+			
+			//	Replace NULL bytes with space
+			fmt::replace('\0', ' ', cmd);
+			
+			if(_use_name){
+				//	Get name of cmd
+				cmd_name = fmt::basename(cmd.substr(0, cmd.find(' ')));
+				
+				if(_name != cmd_name){
+					continue;
+				}
+			}
+			
+			//	Filter
+			if(_use_filter && !std::regex_search(cmd, _filter_rem, _filter_re)){
+				continue;
+			}
+			
+			//	Build path to /proc/PID/stat
+			strcpy(path_stat, _dir_proc);
+			strcat(path_stat, entry->d_name);
+			strcat(path_stat, "/stat");
+			
+			//	Open /proc/PID/stat
+			f_stat = fopen(path_stat, "r");
+			if(!f_stat){
+				continue;
+			}
+			fscanf(f_stat, "%s", proc_pid);
+			fscanf(f_stat, "%s", proc_name);
+			fscanf(f_stat, "%s", proc_state);
+			fscanf(f_stat, "%s", proc_ppid);
+			fclose(f_stat);
+			
+			std::cout << proc_pid << " " << proc_ppid << " " << cmd << '\n';
 		}
-		while(ri->Next(level));
-		
-		root.add_child("elms", children);
 	}
+	closedir(dir);
 	
-	// Destroy used object and release memory
-	api->End();
-	pixDestroy(&image);
-	
-	auto elapsed = std::chrono::high_resolution_clock::now() - start;
-	root.put("exec_time", ((float)std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count() / 1000) / 1000);
-	
-	std::ostringstream oss;
-	write_json(oss, root, false);
-	
-	return oss.str();
-}*/
+	return "";
+}
