@@ -19,7 +19,7 @@ The `-name <name>` filter all processes by name. If you want to see all PHP proc
 The `-grep <pattern>` argument can be used to run the result through a regex pattern before output in the same way as piping through `grep`.
 
 ## -stat (argument)
-The `-stat` argument prints extended information about CPU and memory usage, which the `ps` command can't do natively. These information is calculated accross multiple files in the `/proc` file system.
+The `-stat` argument prints extended information about CPU and memory usage, which the `ps` command can't do natively. These information are calculated accross multiple files in the `/proc` file system.
 
 ## -help (argument)
 ```
