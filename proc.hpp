@@ -14,7 +14,7 @@ Proc::Proc(){}
 void Proc::usage(){
 	std::cout << "proc: version " << VERSION <<
 		"\n\nOutput process list\nPID PPID CMD\n\n"
-		"\n\nOutput process list with -stat\nPID PPID CMD\n\n"
+		"Output process list with -stat\nPID PPID CPU MEM STARTTIME EXECTIME CMD\n\n"
 		"Usage: proc [options]\n"
 		"Options:\n"
 		"\t-name <name>         -- Process name\n"
