@@ -3,6 +3,9 @@
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
+#include <chrono>
+#include <cmath>
 #include "str/fmt.cpp"
 #include "proc.h"
 
@@ -11,10 +14,12 @@ Proc::Proc(){}
 void Proc::usage(){
 	std::cout << "proc: version " << VERSION <<
 		"\n\nOutput process list\nPID PPID CMD\n\n"
+		"\n\nOutput process list with -stat\nPID PPID CMD\n\n"
 		"Usage: proc [options]\n"
 		"Options:\n"
-		"\t-C <name>            -- Process name\n"
-		"\t-grep <pattern>      -- Filter output grep alike\n" << '\n';
+		"\t-name <name>         -- Process name\n"
+		"\t-grep <pattern>      -- Filter output grep alike\n"
+		"\t-stat                -- Show CPU/mem\n" << '\n';
 }
 
 void Proc::find_name(const std::string& s){
@@ -26,6 +31,10 @@ void Proc::filter_cmd(const std::string& s){
 	_use_filter 	= true;
 	_filter 		= s;
 	_filter_re 		= s;
+}
+
+void Proc::stat(){
+	_use_stat 		= true;
 }
 
 void Proc::run(){
@@ -42,11 +51,45 @@ void Proc::run(){
 	std::string cmd_name;
 	
 	char path_stat[16];
-	FILE* f_stat;
-	char proc_pid[6];
-	char proc_name[17];
-	char proc_state[2];
-	char proc_ppid[6];
+	FILE* fd;
+	const char* format_stat = "%*s %*s %*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %s %s %s %s %s %*s %*s %*s %s %*s %s";
+	char proc_ppid[6];			// 4
+	char proc_utime[6];			// 14
+	char proc_stime[6];			// 15
+	char proc_cutime[6];		// 16
+	char proc_cstime[6];		// 17
+	char proc_priority[3];		// 18
+	char proc_starttime[16];	// 22
+	char proc_rss[10];			// 24
+	
+	char path_uptime[13];
+	char sys_uptime[16];
+	int CLK_TCK, PAGESIZE_KB;
+	double uptime;
+	
+	int time;
+	double cputime;
+	int seconds;
+	
+	if(_use_stat){
+		CLK_TCK 	= sysconf(_SC_CLK_TCK);
+		PAGESIZE_KB = sysconf(_SC_PAGESIZE) / 1024;
+		
+		//	Build path to /proc/uptime
+		strcpy(path_uptime, _dir_proc);
+		strcat(path_uptime, "/uptime");
+		
+		//	Open /proc/PID/stat
+		fd = fopen(path_uptime, "r");
+		if(!fd){
+			throw std::runtime_error("Couldn't open directory "+std::string(path_uptime));
+		}
+		fscanf(fd, "%s", sys_uptime);
+		fclose(fd);
+		
+		uptime 	= atof(sys_uptime);
+		time 	= std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	}
 	
 	for(int i = 0; entry = readdir(dir); i++){
 		if(entry->d_type == DT_DIR && val::is_digits(entry->d_name)){
@@ -89,18 +132,38 @@ void Proc::run(){
 			strcat(path_stat, "/stat");
 			
 			//	Open /proc/PID/stat
-			f_stat = fopen(path_stat, "r");
-			if(!f_stat){
+			fd = fopen(path_stat, "r");
+			if(!fd){
 				continue;
 			}
-			fscanf(f_stat, "%s", proc_pid);
-			fscanf(f_stat, "%s", proc_name);
-			fscanf(f_stat, "%s", proc_state);
-			fscanf(f_stat, "%s", proc_ppid);
-			fclose(f_stat);
 			
-			std::cout << proc_pid << " " << proc_ppid << " " << cmd << '\n';
+			if(_use_stat){
+				fscanf(fd, format_stat, proc_ppid, proc_utime, proc_stime, proc_cutime, proc_cstime, proc_priority, proc_starttime, proc_rss);
+				
+				cputime = atoi(proc_utime) + atoi(proc_stime) + atoi(proc_cutime) + atoi(proc_cstime);
+				seconds = uptime - (atoi(proc_starttime) / CLK_TCK);
+				
+				std::cout <<
+					entry->d_name << " " <<
+					proc_ppid << " " <<
+					std::round((cputime / CLK_TCK / seconds) * 100 * 10.0) / 10.0 << "% " <<
+					std::round(atof(proc_rss) * PAGESIZE_KB / 1024 * 10.0) / 10.0 << "M " <<
+					time - seconds << " " <<
+					seconds << " " <<
+					cmd << '\n';
+			}
+			else{
+				fscanf(fd, "%*s %*s %*s %s", proc_ppid);
+				
+				std::cout <<
+					entry->d_name << " " <<
+					proc_ppid << " " <<
+					cmd << '\n';
+			}
+			
+			fclose(fd);
 		}
 	}
+	
 	closedir(dir);
 }

@@ -3,7 +3,6 @@
  *	# g++ -O2 -std=c++17 proc.cpp -o proc
  */
 
-//#include <algorithm>
 #include "str/val.cpp"
 #include "proc.hpp"
 
@@ -19,7 +18,7 @@ int main(int argc, char* argv[]){
 			arg 	= std::string(argv[i]);
 			v 		= i + 1;
 			
-			if(arg == "-C"){
+			if(arg == "-name"){
 				if(argc <= v || val::starts_with(argv[v], "-")){
 					throw std::invalid_argument("Argument '"+arg+"' excepted a value");
 				}
@@ -32,6 +31,9 @@ int main(int argc, char* argv[]){
 				}
 				
 				a.filter_cmd(argv[++i]);
+			}
+			else if(arg == "-stat"){
+				a.stat();
 			}
 			else{
 				throw std::invalid_argument("Argument '"+arg+"' is invalid");
