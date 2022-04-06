@@ -28,7 +28,7 @@ void Proc::filter_cmd(const std::string& s){
 	_filter_re 		= s;
 }
 
-std::string Proc::run(){
+void Proc::run(){
 	DIR* dir = opendir(_dir_proc);
 	if(dir == NULL){
 		throw std::runtime_error("Couldn't open directory "+std::string(_dir_proc));
@@ -103,6 +103,4 @@ std::string Proc::run(){
 		}
 	}
 	closedir(dir);
-	
-	return "";
 }

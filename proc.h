@@ -8,7 +8,7 @@ public:
 	void find_name						(const std::string& s);
 	void filter_cmd						(const std::string& s);
 	
-	std::string run						();
+	void run							();
 
 private:
 	bool _use_name 						= false;
