@@ -1,9 +1,9 @@
 # cpp-proc
-High performance (Linux) process status information tool. It reads the dynamic `/proc` kernel filesystem directly in the same manner as the native Linux command `ps`, but with much better performance (2-3 times faster).
+High performance (Linux) process status information tool. It reads the dynamic `/proc` kernel file system directly in the same manner as the native Linux command `ps`, but with much better performance (2-3 times faster).
 
 It is shipped with a built-in regex option `-grep`, and will emulate piping `ps ... | grep ...`, but with much higher performance. The regex logic is implemented in the internal code and applied on the result before output without unnecessary overhead.
 
-The output information is separated by whitespaces and parsed with convenience.
+The output information is separated by whitespaces and can be parsed with ease and convenience.
 
 ### Example
 ```
