@@ -3,7 +3,7 @@ High performance (Linux) process status information tool. It reads the dynamic `
 
 It can also be used with the built-in regex argument `-grep`. It will then work in the same way as if you pipe the output like `ps ... | grep ...` but again with much higher performance because the regex is performed directly on the result before output.
 
-The output information is separated by whitespaces, so it's very easy to read, parse and use.
+The output information is separated by whitespaces and very easy to read and parse.
 
 ### Example
 ```
