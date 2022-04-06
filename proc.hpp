@@ -150,7 +150,7 @@ void Proc::run(){
 					std::round((cputime / CLK_TCK / seconds) * 100 * 10.0) / 10.0 << "% " <<
 					std::round(atof(proc_rss) * PAGESIZE_KB / 1024 * 10.0) / 10.0 << "M " <<
 					time - seconds << " " <<
-					seconds << " " <<
+					seconds << " #" <<
 					cmd << '\n';
 			}
 			else{
@@ -158,7 +158,7 @@ void Proc::run(){
 				
 				std::cout <<
 					entry->d_name << " " <<
-					proc_ppid << " " <<
+					proc_ppid << " #" <<
 					cmd << '\n';
 			}
 			

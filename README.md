@@ -8,8 +8,8 @@ The output information is separated by whitespaces and very easy to read and par
 ### Example
 ```
 # ./proc -name php -grep "cronjob\.php listen_websockets" -stat
-8650 8648 0% 39.7M 1649252760 2847 php /var/www/php/cronjob.php listen_websockets
-15272 15271 0.3% 38.9M 1649255581 26 php /var/www/php/cronjob.php listen_websockets
+8650 8648 0% 39.7M 1649252760 2847 #php /var/www/php/cronjob.php listen_websockets
+15272 15271 0.3% 38.9M 1649255581 26 #php /var/www/php/cronjob.php listen_websockets
 ```
 
 ## -name (argument)
@@ -27,10 +27,10 @@ The `-stat` argument prints extended information about CPU and memory usage, whi
 proc: version 0.1
 
 Output process list
-PID PPID CMD
+PID PPID #CMD
 
 Output process list with -stat
-PID PPID CPU MEM STARTTIME EXECTIME CMD
+PID PPID CPU MEM STARTTIME EXECTIME #CMD
 
 Usage: proc [options]
 Options:
