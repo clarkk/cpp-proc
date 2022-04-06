@@ -12,11 +12,11 @@ The output information is separated by whitespaces and parsed with convenience.
 15272 15271 0.3% 38.9M 1649255581 26 #php /var/www/php/cronjob.php listen_websockets
 ```
 
-## -name <name>
-The `-name` filter all processes by name. If you want to list all PHP processes use `-name php`.
+## -name
+The `-name <name>` filter all processes by name. If you want to list all PHP processes use `-name php`.
 
-## -grep <pattern>
-The `-grep` filter the result by a regex pattern before output in the same manner as piping `ps ... | grep ...`.
+## -grep
+The `-grep <pattern>` filter the result by a regex pattern before output in the same manner as piping `ps ... | grep ...`.
 
 ## -stat
 The `-stat` option appends information about CPU and memory usage. This information is calculated across several files in the `/proc` file system, and CPU time is calculated as an average since the process was created.
