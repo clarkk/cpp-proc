@@ -4,8 +4,8 @@
  */
 
 #include "proc.hpp"
+#include <string.h>
 //#include <dirent.h>
-//#include <string.h>
 //#include <fstream>
 //#include <sstream>
 //#include <algorithm>
@@ -123,29 +123,45 @@ void ps(){
 	closedir(dir);*/
 }
 
+bool StartsWith(const char* a, const char* b){
+	return strncmp(a, b, strlen(b)) == 0;
+}
+
 int main(int argc, char* argv[]){
 	Proc a;
-	a.usage();
+	
+	std::string arg;
+	int v;
+	
 	try{
 		//	Parse arguments
 		for(int i = 1; i < argc; i++){
-			std::string arg = std::string(argv[i]);
+			arg = std::string(argv[i]);
+			v = i+1;
 			
 			if(arg == "-C"){
-				a.set_name(argv[++i]);
+				if(argc <= v || StartsWith(argv[v], "-")){
+					throw std::invalid_argument("Argument '"+arg+"' excepted a value");
+				}
+				
+				a.find_name(argv[++i]);
 			}
 			else if(arg == "-grep"){
-				//a.set_dpi(atoi(argv[++i]));
+				if(argc <= v || StartsWith(argv[v], "-")){
+					throw std::invalid_argument("Argument '"+arg+"' excepted a value");
+				}
+				
+				a.filter_cmd(argv[++i]);
 			}
 			else{
-				throw std::runtime_error("Argument '"+arg+"' is invalid");
+				throw std::invalid_argument("Argument '"+arg+"' is invalid");
 			}
 		}
 		
 		//std::cout << a.run() << std::endl;
 	}
-	catch(std::exception& e){
-		std::cerr << "Error: " << e.what() << "\n" << std::endl;
+	catch(const std::invalid_argument& e){
+		std::cerr << "Error: " << e.what() << '\n';
 		a.usage();
 		
 		return 1;

@@ -11,8 +11,12 @@ void Proc::usage(){
 		"\t-grep <pattern>      -- Filter output grep alike\n" << std::endl;
 }
 
-void Proc::set_name(const std::string& s){
-	find_name = s;
+void Proc::find_name(const std::string& s){
+	_name = s;
+}
+
+void Proc::filter_cmd(const std::string& s){
+	_filter = s;
 }
 
 /*void Txtocr::set_level(const std::string& s){
