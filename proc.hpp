@@ -19,7 +19,8 @@ void Proc::usage(){
 		"Options:\n"
 		"\t-name <name>         -- Process name\n"
 		"\t-grep <pattern>      -- Filter output grep alike\n"
-		"\t-stat                -- Show CPU/mem\n" << '\n';
+		"\t-stat                -- Show CPU/mem\n"
+		"\t-help\n" << '\n';
 }
 
 void Proc::find_name(const std::string& s){

@@ -35,6 +35,11 @@ int main(int argc, char* argv[]){
 			else if(arg == "-stat"){
 				a.stat();
 			}
+			else if(arg == "-help"){
+				a.usage();
+				
+				return 0;
+			}
 			else{
 				throw std::invalid_argument("Argument '"+arg+"' is invalid");
 			}
