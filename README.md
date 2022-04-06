@@ -1,9 +1,9 @@
 # cpp-proc
-High performance (Linux) process status information tool. It reads the dynamic `/proc` filesystem directly in the same way as `ps`, but with much better performance (2-3 times faster).
+High performance (Linux) process status information tool. It reads the dynamic `/proc` kernel filesystem directly in the same manner as the native Linux command `ps`, but with much better performance (2-3 times faster).
 
-It can also be used with the built-in regex argument `-grep`. It will then work in the same way as if you pipe the output like `ps ... | grep ...` but again with much higher performance because the regex is performed directly and internal on the result before output.
+It is shipped with a built-in regex option `-grep`, and will emulate piping `ps ... | grep ...`, but with much higher performance. The regex logic is implemented in the internal code and applied on the result before output without unnecessary overhead.
 
-The output information is separated by whitespaces and very easy to read and parse.
+The output information is separated by whitespaces and parsed with convenience.
 
 ### Example
 ```
@@ -12,16 +12,16 @@ The output information is separated by whitespaces and very easy to read and par
 15272 15271 0.3% 38.9M 1649255581 26 #php /var/www/php/cronjob.php listen_websockets
 ```
 
-## -name (argument)
-The `-name <name>` filter all processes by name. If you want to see all PHP processes use `-name php`.
+## -name <name>
+The `-name` filter all processes by name. If you want to list all PHP processes use `-name php`.
 
-## -grep (argument)
-The `-grep <pattern>` argument can be used to run the result through a regex pattern before output in the same way as piping through `grep`.
+## -grep <pattern>
+The `-grep` filter the result by a regex pattern before output in the same manner as piping `ps ... | grep ...`.
 
-## -stat (argument)
-The `-stat` argument prints extended information about CPU and memory usage, which the `ps` command can't do natively. These information are calculated accross multiple files in the `/proc` file system.
+## -stat
+The `-stat` option appends information about CPU and memory usage. This information is calculated across several files in the `/proc` file system, and CPU time is calculated as an average since the process was created.
 
-## -help (argument)
+## -help
 ```
 # ./proc -help
 proc: version 0.1

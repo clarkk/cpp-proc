@@ -93,77 +93,79 @@ void Proc::run(){
 	}
 	
 	for(int i = 0; entry = readdir(dir); i++){
-		if(entry->d_type == DT_DIR && val::is_digits(entry->d_name)){
-			//	Build path to /proc/PID/cmdline
-			strcpy(path_cmd, _dir_proc);
-			strcat(path_cmd, entry->d_name);
-			strcat(path_cmd, "/cmdline");
-			
-			//	Open /proc/PID/cmdline
-			ifs.open(path_cmd, std::ifstream::in);
-			if(!ifs){
-				continue;
-			}
-			
-			std::stringstream ss;
-			ss << ifs.rdbuf();
-			cmd = ss.str();
-			ifs.close();
-			
-			//	Replace NULL bytes with space
-			fmt::replace('\0', ' ', cmd);
-			
-			if(_use_name){
-				//	Get name of cmd
-				cmd_name = fmt::basename(cmd.substr(0, cmd.find(' ')));
-				
-				if(_name != cmd_name){
-					continue;
-				}
-			}
-			
-			//	Filter
-			if(_use_filter && !std::regex_search(cmd, _filter_rem, _filter_re)){
-				continue;
-			}
-			
-			//	Build path to /proc/PID/stat
-			strcpy(path_stat, _dir_proc);
-			strcat(path_stat, entry->d_name);
-			strcat(path_stat, "/stat");
-			
-			//	Open /proc/PID/stat
-			fd = fopen(path_stat, "r");
-			if(!fd){
-				continue;
-			}
-			
-			if(_use_stat){
-				fscanf(fd, format_stat, proc_ppid, proc_utime, proc_stime, proc_cutime, proc_cstime, proc_priority, proc_starttime, proc_rss);
-				
-				cputime = atoi(proc_utime) + atoi(proc_stime) + atoi(proc_cutime) + atoi(proc_cstime);
-				seconds = uptime - (atoi(proc_starttime) / CLK_TCK);
-				
-				std::cout <<
-					entry->d_name << " " <<
-					proc_ppid << " " <<
-					std::round((cputime / CLK_TCK / seconds) * 100 * 10.0) / 10.0 << "% " <<
-					std::round(atof(proc_rss) * PAGESIZE_KB / 1024 * 10.0) / 10.0 << "M " <<
-					time - seconds << " " <<
-					seconds << " #" <<
-					cmd << '\n';
-			}
-			else{
-				fscanf(fd, "%*s %*s %*s %s", proc_ppid);
-				
-				std::cout <<
-					entry->d_name << " " <<
-					proc_ppid << " #" <<
-					cmd << '\n';
-			}
-			
-			fclose(fd);
+		if(entry->d_type != DT_DIR || !val::is_digits(entry->d_name)){
+			continue;
 		}
+		
+		//	Build path to /proc/PID/cmdline
+		strcpy(path_cmd, _dir_proc);
+		strcat(path_cmd, entry->d_name);
+		strcat(path_cmd, "/cmdline");
+		
+		//	Open /proc/PID/cmdline
+		ifs.open(path_cmd, std::ifstream::in);
+		if(!ifs){
+			continue;
+		}
+		
+		std::stringstream ss;
+		ss << ifs.rdbuf();
+		cmd = ss.str();
+		ifs.close();
+		
+		//	Replace NULL bytes with space
+		fmt::replace('\0', ' ', cmd);
+		
+		if(_use_name){
+			//	Get name of cmd
+			cmd_name = fmt::basename(cmd.substr(0, cmd.find(' ')));
+			
+			if(_name != cmd_name){
+				continue;
+			}
+		}
+		
+		//	Filter
+		if(_use_filter && !std::regex_search(cmd, _filter_rem, _filter_re)){
+			continue;
+		}
+		
+		//	Build path to /proc/PID/stat
+		strcpy(path_stat, _dir_proc);
+		strcat(path_stat, entry->d_name);
+		strcat(path_stat, "/stat");
+		
+		//	Open /proc/PID/stat
+		fd = fopen(path_stat, "r");
+		if(!fd){
+			continue;
+		}
+		
+		if(_use_stat){
+			fscanf(fd, format_stat, proc_ppid, proc_utime, proc_stime, proc_cutime, proc_cstime, proc_priority, proc_starttime, proc_rss);
+			
+			cputime = atoi(proc_utime) + atoi(proc_stime) + atoi(proc_cutime) + atoi(proc_cstime);
+			seconds = uptime - (atoi(proc_starttime) / CLK_TCK);
+			
+			std::cout <<
+				entry->d_name << " " <<
+				proc_ppid << " " <<
+				std::round((cputime / CLK_TCK / seconds) * 100 * 10.0) / 10.0 << "% " <<
+				std::round(atof(proc_rss) * PAGESIZE_KB / 1024 * 10.0) / 10.0 << "M " <<
+				time - seconds << " " <<
+				seconds << " #" <<
+				cmd << '\n';
+		}
+		else{
+			fscanf(fd, "%*s %*s %*s %s", proc_ppid);
+			
+			std::cout <<
+				entry->d_name << " " <<
+				proc_ppid << " #" <<
+				cmd << '\n';
+		}
+		
+		fclose(fd);
 	}
 	
 	closedir(dir);
