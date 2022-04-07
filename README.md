@@ -39,3 +39,42 @@ Options:
         -stat                -- Show CPU/mem
         -help
 ```
+
+## Parse output with PHP
+```
+$procs = explode("\n", rtrim(shell_exec('./proc -name php -grep "cronjob\.php listen_websockets" -stat')));
+foreach($procs as &$proc){
+        $pos    = strpos($proc, '#');
+        $cmd    = substr($proc, $pos+1);
+        $values = explode(' ', rtrim(substr($proc, 0, $pos)));
+        
+        //  Output with -stat
+        if($stat){
+                $proc = [
+                        'pid'   => '',
+                        'ppid'  => '',
+                        'cpu'   => '',
+                        'mem'   => '',
+                        'start' => '',
+                        'time'  => '',
+                        'cmd'   => $cmd
+                ];
+        }
+        //  Output without -stat
+        else{
+                $proc = [
+                        'pid'   => '',
+                        'ppid'  => '',
+                        'cmd'   => $cmd
+                ];
+        }
+        
+        foreach($proc as &$p){
+                if($value = array_shift($values)){
+                        $p = $value;
+                }
+        }
+}
+
+print_r($procs);
+```
