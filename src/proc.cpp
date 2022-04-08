@@ -1,6 +1,6 @@
 /*
  *	Compile
- *	# g++ -O3 -std=c++17 proc.cpp -o proc
+ *	# g++ -O3 -std=c++17 proc.cpp -o ../proc
  */
 
 #include "str/val.cpp"
