@@ -108,9 +108,9 @@ void Proc::run(){
 			continue;
 		}
 		
-		std::stringstream ss;
-		ss << ifs.rdbuf();
-		cmd = ss.str();
+		std::ostringstream oss;
+		oss << ifs.rdbuf();
+		cmd = oss.str();
 		ifs.close();
 		
 		//	Replace NULL bytes with space
