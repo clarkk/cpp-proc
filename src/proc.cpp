@@ -7,8 +7,11 @@
 #include "proc.hpp"
 
 int main(int argc, char* argv[]){
-	//	unsync C and C++ I/O for better performance
+	//	Unsync C and C++ I/O (for better performance)
 	std::ios::sync_with_stdio(false);
+	
+	//	Untie stdin from stdout (for better performance)
+	std::cin.tie(NULL);
 	
 	Proc a;
 	
