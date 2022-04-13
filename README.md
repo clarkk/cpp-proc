@@ -9,7 +9,7 @@ This tool is great if you want to monitor CPU and/or memory intensive cronjobs.
 
 ### Example
 ```
-# ./proc -name php -grep "cronjob\.php listen_websockets" -stat
+# ./proc -name php -grep "cronjob\.php listen_websockets\b" -stat
 8650 8648 0% 39.7M 1649252760 2847 #php /var/www/php/cronjob.php listen_websockets
 15272 15271 0.3% 38.9M 1649255581 26 #php /var/www/php/cronjob.php listen_websockets
 ```
