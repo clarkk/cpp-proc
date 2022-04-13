@@ -93,7 +93,7 @@ void Proc::run(){
 		time 	= std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	}
 	
-	for(int i = 0; (entry = readdir(dir)); i++){
+	while((entry = readdir(dir))){
 		if(entry->d_type != DT_DIR || !val::is_digits(entry->d_name)){
 			continue;
 		}
