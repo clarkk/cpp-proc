@@ -1,7 +1,7 @@
 # cpp-proc
 High performance (Linux) process status information tool. It reads the dynamic `/proc` kernel file system directly in the same manner as the native Linux command `ps`, but with much better performance (2-3 times faster).
 
-It is shipped with a built-in regex option `-grep`, and will emulate piping `ps ... | grep ...`, but with much higher performance. The regex logic is implemented directly in the process iteration loop and applied on the result before output without unnecessary overhead.
+It is shipped with a built-in regex option `-grep`, and will emulate piping `ps ... | grep ...`, but with much better performance. The regex logic is implemented directly in the process list iteration and applied on the result before output without unnecessary overhead.
 
 The output information is separated by whitespaces and can be parsed with ease and convenience.
 
@@ -10,7 +10,6 @@ This tool is great if you want to monitor CPU and/or memory intensive cronjobs.
 ### Example
 ```
 # ./proc -name php -grep "cronjob\.php listen_websockets\b" -stat
-8650 8648 0% 39.7M 1649252760 2847 #php /var/www/php/cronjob.php listen_websockets
 15272 15271 0.3% 38.9M 1649255581 26 #php /var/www/php/cronjob.php listen_websockets
 ```
 

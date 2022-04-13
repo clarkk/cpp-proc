@@ -65,10 +65,11 @@ void Proc::run(){
 	
 	char path_uptime[13];
 	char sys_uptime[16];
-	int CLK_TCK, PAGESIZE_KB;
-	double uptime;
+	int CLK_TCK = 0;
+	int PAGESIZE_KB = 0;
+	double uptime = 0;
 	
-	int time;
+	int time = 0;
 	double cputime;
 	int seconds;
 	
@@ -92,7 +93,7 @@ void Proc::run(){
 		time 	= std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	}
 	
-	for(int i = 0; entry = readdir(dir); i++){
+	for(int i = 0; (entry = readdir(dir)); i++){
 		if(entry->d_type != DT_DIR || !val::is_digits(entry->d_name)){
 			continue;
 		}
