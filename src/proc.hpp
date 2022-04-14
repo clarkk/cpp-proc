@@ -81,7 +81,7 @@ void Proc::run(){
 		strcpy(path_uptime, _dir_proc);
 		strcat(path_uptime, "/uptime");
 		
-		//	Open /proc/PID/stat
+		//	Open /proc/uptime
 		fd = fopen(path_uptime, "r");
 		if(!fd){
 			throw std::runtime_error("Couldn't open directory "+std::string(path_uptime));
