@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <chrono>
 #include <cmath>
-#include "str/fmt.cpp"
+#include "libstr/fmt.h"
 #include "proc.h"
 
 Proc::Proc(){}

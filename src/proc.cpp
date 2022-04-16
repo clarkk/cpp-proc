@@ -3,7 +3,7 @@
  *	# g++ -Wall -O3 -std=c++17 proc.cpp -o ../proc
  */
 
-#include "str/val.cpp"
+#include "libstr/val.h"
 #include "proc.hpp"
 
 int main(int argc, char* argv[]){
