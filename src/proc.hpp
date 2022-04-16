@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cmath>
 #include "libstr/fmt.h"
+#include "libstr/val.h"
 #include "proc.h"
 
 Proc::Proc(){}
@@ -20,7 +21,8 @@ void Proc::usage(){
 		"\t-name <name>         -- Process name\n"
 		"\t-grep <pattern>      -- Filter output grep alike\n"
 		"\t-stat                -- Show CPU/mem\n"
-		"\t-help\n\n";
+		"\t-help\n"
+		<< '\n';
 }
 
 void Proc::find_name(const std::string& s){

@@ -3,7 +3,7 @@
  *	# g++ -Wall -O3 -std=c++17 proc.cpp -o ../proc
  */
 
-#include "libstr/val.h"
+#include "libstr/arg.h"
 #include "proc.hpp"
 
 int main(int argc, char* argv[]){
@@ -15,39 +15,25 @@ int main(int argc, char* argv[]){
 	
 	Proc a;
 	
-	std::string arg;
-	int v;
-	
 	try{
 		//	Parse arguments
 		for(int i = 1; i < argc; i++){
-			arg 	= std::string(argv[i]);
-			v 		= i + 1;
-			
-			if(arg == "-name"){
-				if(argc <= v || val::starts_with(argv[v], "-")){
-					throw std::invalid_argument("Argument '"+arg+"' excepted a value");
-				}
-				
-				a.find_name(argv[++i]);
+			if(char* value = arg::argument("name", argc, argv, i)){
+				a.find_name(value);
 			}
-			else if(arg == "-grep"){
-				if(argc <= v || val::starts_with(argv[v], "-")){
-					throw std::invalid_argument("Argument '"+arg+"' excepted a value");
-				}
-				
-				a.filter_cmd(argv[++i]);
+			else if(char* value = arg::argument("grep", argc, argv, i)){
+				a.filter_cmd(value);
 			}
-			else if(arg == "-stat"){
+			else if(arg::flag("stat", argv[i])){
 				a.stat();
 			}
-			else if(arg == "-help"){
+			else if(arg::flag("help", argv[i])){
 				a.usage();
 				
 				return 0;
 			}
 			else{
-				throw std::invalid_argument("Argument '"+arg+"' is invalid");
+				throw std::invalid_argument("Argument '"+std::string(argv[i])+"' is invalid");
 			}
 		}
 		
