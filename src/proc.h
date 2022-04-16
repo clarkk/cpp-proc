@@ -9,7 +9,7 @@ public:
 	void filter_cmd						(const std::string& s);
 	void stat 							();
 	
-	void run							();
+	int run								();
 
 private:
 	bool _use_name 						= false;

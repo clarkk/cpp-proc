@@ -12,7 +12,7 @@
 Proc::Proc(){}
 
 void Proc::usage(){
-	std::cout << "proc: version " << VERSION << "\n\n"
+	std::cout << "proc: " << VERSION << "\n\n"
 		"Output process list\nPID PPID CMD\n\n"
 		"Output process list with -stat\nPID PPID CPU MEM STARTTIME EXECTIME CMD\n\n"
 		"Usage: proc [options]\n"
@@ -20,7 +20,7 @@ void Proc::usage(){
 		"\t-name <name>         -- Process name\n"
 		"\t-grep <pattern>      -- Filter output grep alike\n"
 		"\t-stat                -- Show CPU/mem\n"
-		"\t-help\n";
+		"\t-help\n\n";
 }
 
 void Proc::find_name(const std::string& s){
@@ -38,7 +38,7 @@ void Proc::stat(){
 	_use_stat 		= true;
 }
 
-void Proc::run(){
+int Proc::run(){
 	DIR* dir = opendir(_dir_proc);
 	if(dir == NULL){
 		throw std::runtime_error("Couldn't open directory "+std::string(_dir_proc));
@@ -170,4 +170,6 @@ void Proc::run(){
 	}
 	
 	closedir(dir);
+	
+	return 0;
 }

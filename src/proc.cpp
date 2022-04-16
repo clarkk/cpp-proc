@@ -51,9 +51,7 @@ int main(int argc, char* argv[]){
 			}
 		}
 		
-		a.run();
-		
-		return 0;
+		return a.run();
 	}
 	catch(const std::invalid_argument& e){
 		std::cerr << "Error: " << e.what() << "\n\n";
