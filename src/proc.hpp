@@ -12,15 +12,15 @@
 Proc::Proc(){}
 
 void Proc::usage(){
-	std::cout << "proc: version " << VERSION <<
-		"\n\nOutput process list\nPID PPID CMD\n\n"
+	std::cout << "proc: version " << VERSION << "\n\n"
+		"Output process list\nPID PPID CMD\n\n"
 		"Output process list with -stat\nPID PPID CPU MEM STARTTIME EXECTIME CMD\n\n"
 		"Usage: proc [options]\n"
 		"Options:\n"
 		"\t-name <name>         -- Process name\n"
 		"\t-grep <pattern>      -- Filter output grep alike\n"
 		"\t-stat                -- Show CPU/mem\n"
-		"\t-help\n" << '\n';
+		"\t-help\n";
 }
 
 void Proc::find_name(const std::string& s){
