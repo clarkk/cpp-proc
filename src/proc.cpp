@@ -16,12 +16,14 @@ int main(int argc, char* argv[]){
 	Proc a;
 	
 	try{
+		char* value;
+		
 		//	Parse arguments
 		for(int i = 1; i < argc; i++){
-			if(char* value = arg::argument("name", argc, argv, i)){
+			if((value = arg::argument("name", argc, argv, i))){
 				a.find_name(value);
 			}
-			else if(char* value = arg::argument("grep", argc, argv, i)){
+			else if((value = arg::argument("grep", argc, argv, i))){
 				a.filter_cmd(value);
 			}
 			else if(arg::flag("stat", argv[i])){

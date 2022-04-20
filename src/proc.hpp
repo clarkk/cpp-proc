@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
-#include <chrono>
+#include <ctime>
 #include <cmath>
 #include "libstr/fmt.h"
 #include "libstr/val.h"
@@ -67,11 +67,11 @@ int Proc::run(){
 	
 	char path_uptime[13];
 	char sys_uptime[16];
-	int CLK_TCK = 0;
-	int PAGESIZE_KB = 0;
-	double uptime = 0;
+	int CLK_TCK 		= 0;
+	int PAGESIZE_KB 	= 0;
+	double uptime 		= 0;
 	
-	int time = 0;
+	std::time_t time 	= 0;
 	double cputime;
 	int seconds;
 	
@@ -92,7 +92,7 @@ int Proc::run(){
 		fclose(fd);
 		
 		uptime 	= atof(sys_uptime);
-		time 	= std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		time 	= std::time(0);
 	}
 	
 	while((entry = readdir(dir))){
