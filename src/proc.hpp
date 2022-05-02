@@ -50,8 +50,9 @@ int Proc::run(){
 	
 	char path_cmd[20];
 	std::ifstream ifs;
-	std::string cmd;
-	std::string cmd_name;
+	std::string
+		cmd,
+		cmd_name;
 	
 	char path_stat[16];
 	FILE* fd;
@@ -67,13 +68,15 @@ int Proc::run(){
 	
 	char path_uptime[13];
 	char sys_uptime[16];
-	int CLK_TCK 		= 0;
-	int PAGESIZE_KB 	= 0;
-	double uptime 		= 0;
+	int
+		CLK_TCK 		= 0,
+		PAGESIZE_KB 	= 0,
+		seconds;
+	double
+		uptime 			= 0,
+		cputime;
 	
 	std::time_t time 	= 0;
-	double cputime;
-	int seconds;
 	
 	if(_use_stat){
 		CLK_TCK 	= sysconf(_SC_CLK_TCK);

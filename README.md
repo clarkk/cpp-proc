@@ -43,7 +43,7 @@ Options:
 
 ## Parse output with PHP
 ```
-$procs = explode("\n", rtrim(shell_exec('./proc -name php -grep "cronjob\.php listen_websockets" -stat')));
+$procs = explode("\n", rtrim(shell_exec('./proc -name php -grep "cronjob\.php listen_websockets\b" -stat')));
 foreach($procs as &$proc){
         $pos    = strpos($proc, '#');
         $cmd    = substr($proc, $pos+1);
