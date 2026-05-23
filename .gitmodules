@@ -1,3 +1,6 @@
 [submodule "src/libstr"]
 	path = src/libstr
 	url = git@github.com:clarkk/cpp-libstr.git
+[submodule "src/liberr"]
+	path = src/liberr
+	url = git@github.com:clarkk/cpp-liberr

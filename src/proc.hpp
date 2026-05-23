@@ -33,7 +33,13 @@ void Proc::find_name(const std::string& s){
 void Proc::filter_cmd(const std::string& s){
 	_use_filter 	= true;
 	_filter 		= s;
-	_filter_re 		= s;
+	
+	try{
+		_filter_re = std::regex(s, std::regex_constants::optimize);
+	}
+	catch(const std::regex_error&){
+		throw std::invalid_argument("Invalid regex pattern '"+s+"'");
+	}
 }
 
 void Proc::stat(){
@@ -48,79 +54,90 @@ int Proc::run(){
 	
 	struct dirent* entry;
 	
-	char path_cmd[20];
-	std::ifstream ifs;
 	std::string
 		cmd,
-		cmd_name;
+		cmd_name,
+		stat_line;
 	
-	char path_stat[16];
-	FILE* fd;
-	const char* format_stat = "%*s %*s %*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %s %s %s %s %s %*s %*s %*s %s %*s %s";
-	char proc_ppid[6];			// 4
-	char proc_utime[6];			// 14
-	char proc_stime[6];			// 15
-	char proc_cutime[6];		// 16
-	char proc_cstime[6];		// 17
-	char proc_priority[3];		// 18
-	char proc_starttime[16];	// 22
-	char proc_rss[10];			// 24
+	std::string path_buf;
+	path_buf.reserve(64);
 	
-	char path_uptime[13];
-	char sys_uptime[16];
-	int
+	std::ifstream ifs;
+	
+	double
 		CLK_TCK 		= 0,
 		PAGESIZE_KB 	= 0,
-		seconds;
-	double
 		uptime 			= 0,
-		cputime;
+		cputime,
+		seconds;
 	
-	std::time_t time 	= 0;
+	struct proc_stat {
+		long ppid;
+		long utime;
+		long stime;
+		long cutime;
+		long cstime;
+		long starttime;
+		long rss;
+	};
+	
+	std::time_t time = 0;
 	
 	if(_use_stat){
 		CLK_TCK 	= sysconf(_SC_CLK_TCK);
-		PAGESIZE_KB = sysconf(_SC_PAGESIZE) / 1024;
+		PAGESIZE_KB = sysconf(_SC_PAGESIZE) / 1024.0;
 		
-		//	Build path to /proc/uptime
-		strcpy(path_uptime, _dir_proc);
-		strcat(path_uptime, "/uptime");
+		path_buf = _dir_proc;
+		path_buf += "uptime";
 		
 		//	Open /proc/uptime
-		fd = fopen(path_uptime, "r");
-		if(!fd){
-			throw std::runtime_error("Couldn't open directory "+std::string(path_uptime));
+		ifs.open(path_buf);
+		if(!ifs){
+			closedir(dir);
+			throw std::runtime_error("Couldn't open file "+path_buf);
 		}
-		fscanf(fd, "%s", sys_uptime);
-		fclose(fd);
 		
-		uptime 	= atof(sys_uptime);
-		time 	= std::time(0);
+		ifs >> uptime;
+		
+		ifs.close();
+		ifs.clear();
+		
+		time = std::time(nullptr);
 	}
 	
 	while((entry = readdir(dir))){
+		//	Skip non-process directories
 		if(entry->d_type != DT_DIR || !val::is_digits(entry->d_name)){
 			continue;
 		}
 		
-		//	Build path to /proc/PID/cmdline
-		strcpy(path_cmd, _dir_proc);
-		strcat(path_cmd, entry->d_name);
-		strcat(path_cmd, "/cmdline");
+		path_buf = _dir_proc;
+		path_buf += entry->d_name;
+		path_buf += "/cmdline";
 		
 		//	Open /proc/PID/cmdline
-		ifs.open(path_cmd, std::ifstream::in);
+		ifs.open(path_buf, std::ifstream::in);
 		if(!ifs){
+			ifs.clear();
 			continue;
 		}
 		
-		std::ostringstream oss;
-		oss << ifs.rdbuf();
-		cmd = oss.str();
-		ifs.close();
+		//	Read entire cmdline
+		cmd.assign(
+			std::istreambuf_iterator<char>(ifs),
+			std::istreambuf_iterator<char>()
+		);
 		
-		//	Replace NULL bytes with space
+		ifs.close();
+		ifs.clear();
+		
+		//	Replace NULL separators with spaces
 		fmt::replace('\0', ' ', cmd);
+		
+		//	Skip empty cmdlines
+		if(cmd.empty()){
+			continue;
+		}
 		
 		if(_use_name){
 			//	Get name of cmd
@@ -132,46 +149,108 @@ int Proc::run(){
 		}
 		
 		//	Filter
-		if(_use_filter && !std::regex_search(cmd, _filter_rem, _filter_re)){
+		if(_use_filter){
+			if(!std::regex_search(cmd, _filter_re)){
+				continue;
+			}
+		}
+		
+		path_buf = _dir_proc;
+		path_buf += entry->d_name;
+		path_buf += "/stat";
+		
+		//	Open /proc/PID/stat
+		ifs.open(path_buf);
+		if(!ifs){
+			ifs.clear();
 			continue;
 		}
 		
-		//	Build path to /proc/PID/stat
-		strcpy(path_stat, _dir_proc);
-		strcat(path_stat, entry->d_name);
-		strcat(path_stat, "/stat");
+		std::getline(ifs, stat_line);
 		
-		//	Open /proc/PID/stat
-		fd = fopen(path_stat, "r");
-		if(!fd){
+		ifs.close();
+		ifs.clear();
+		
+		/*
+			/proc/[pid]/stat format:
+			pid (process name) state ppid ...
+		*/
+		size_t pos = stat_line.rfind(')');
+		
+		if(pos == std::string::npos){
+			continue;
+		}
+		
+		//	Data after process name
+		std::istringstream iss(stat_line.substr(pos + 2));
+		
+		char state;
+		proc_stat st;
+		long ignore;
+		
+		//	Field 3
+		iss >> state;
+		
+		//	Field 4
+		iss >> st.ppid;
+		
+		//	Skip fields 5-13
+		for(int i = 0; i < 9; i++){
+			iss >> ignore;
+		}
+		
+		//	Fields 14-17
+		iss >> st.utime;
+		iss >> st.stime;
+		iss >> st.cutime;
+		iss >> st.cstime;
+		
+		//	Skip fields 18-21
+		for(int i = 0; i < 4; i++){
+			iss >> ignore;
+		}
+		
+		//	Field 22
+		iss >> st.starttime;
+		
+		//	Skip field 23
+		iss >> ignore;
+		
+		//	Field 24
+		iss >> st.rss;
+		
+		//	Validate parsing
+		if(iss.fail()){
 			continue;
 		}
 		
 		if(_use_stat){
-			fscanf(fd, format_stat, proc_ppid, proc_utime, proc_stime, proc_cutime, proc_cstime, proc_priority, proc_starttime, proc_rss);
+			seconds = uptime - (st.starttime / CLK_TCK);
 			
-			cputime = atoi(proc_utime) + atoi(proc_stime) + atoi(proc_cutime) + atoi(proc_cstime);
-			seconds = uptime - (atoi(proc_starttime) / CLK_TCK);
+			//	Avoid divide-by-zero
+			if(seconds <= 0){
+				seconds = 0.1;
+			}
+			
+			cputime = st.utime + st.stime + st.cutime + st.cstime;
+			
+			long seconds_display = std::lround(seconds);
 			
 			std::cout <<
 				entry->d_name << " " <<
-				proc_ppid << " " <<
+				st.ppid << " " <<
 				std::round((cputime / CLK_TCK / seconds) * 100 * 10.0) / 10.0 << "% " <<
-				std::round(atof(proc_rss) * PAGESIZE_KB / 1024 * 10.0) / 10.0 << "M " <<
-				time - seconds << " " <<
-				seconds << " #" <<
+				std::round(st.rss * PAGESIZE_KB / 1024.0 * 10.0) / 10.0 << "M " <<
+				std::time_t(time - seconds_display) << " " <<
+				seconds_display << " #" <<
 				cmd << '\n';
 		}
 		else{
-			fscanf(fd, "%*s %*s %*s %s", proc_ppid);
-			
 			std::cout <<
 				entry->d_name << " " <<
-				proc_ppid << " #" <<
+				st.ppid << " #" <<
 				cmd << '\n';
 		}
-		
-		fclose(fd);
 	}
 	
 	closedir(dir);
