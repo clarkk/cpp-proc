@@ -149,10 +149,8 @@ int Proc::run(){
 		}
 		
 		//	Filter
-		if(_use_filter){
-			if(!std::regex_search(cmd, _filter_re)){
-				continue;
-			}
+		if(_use_filter && !std::regex_search(cmd, _filter_re)){
+			continue;
 		}
 		
 		path_buf = _dir_proc;
