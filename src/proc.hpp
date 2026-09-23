@@ -123,10 +123,17 @@ int Proc::run(){
 		}
 		
 		//	Read entire cmdline
-		cmd.assign(
-			std::istreambuf_iterator<char>(ifs),
-			std::istreambuf_iterator<char>()
-		);
+		try{
+			cmd.assign(
+				std::istreambuf_iterator<char>(ifs),
+				std::istreambuf_iterator<char>()
+			);
+		}
+		catch(const std::ios_base::failure&){
+			ifs.close();
+			ifs.clear();
+			continue;
+		}
 		
 		ifs.close();
 		ifs.clear();
